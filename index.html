@@ -11,7 +11,7 @@
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- Custom Styles & Futuristic Animations -->
+  <!-- Custom Styles & Animations -->
   <style>
     @keyframes pulseGlow {
       0%, 100% { opacity: 0.3; transform: scale(1); }
@@ -26,19 +26,23 @@
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
+    }
 
     .animate-pulse-glow { animation: pulseGlow 7s ease-in-out infinite; }
     .animate-float { animation: float 4s ease-in-out infinite; }
 
-    /* Glassmorphism */
+    /* Glassmorphism Card Style */
     .glass-card {
-      background: rgba(15, 23, 42, 0.78);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     
-    /* Futuristic Loading Animated Progress Bar */
+    /* Futuristic Animated Loading Bar */
     .animated-progress-bar {
       background: linear-gradient(90deg, #2563eb, #3b82f6, #6366f1, #a855f7, #2563eb);
       background-size: 300% 300%;
@@ -46,26 +50,22 @@
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
     }
 
-    /* Radar scan effect for loading */
+    /* Radar scan effect during upload */
     .radar-sweep {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(180deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 100%);
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 100%);
       animation: scan 2s linear infinite;
-    }
-    @keyframes scan {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100%); }
     }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
 
-  <!-- Background Glowing Elements -->
+  <!-- Background Ambient Glowing Orbs -->
   <div class="fixed -top-32 -left-32 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse-glow"></div>
   <div class="fixed -bottom-32 -right-32 w-96 h-96 bg-indigo-600/15 rounded-full blur-[120px] pointer-events-none animate-pulse-glow" style="animation-delay: 3s;"></div>
 
-  <!-- Header dengan Logo Website SVG Inline -->
+  <!-- Header Section -->
   <header class="border-b border-slate-800/60 glass-card sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
       
@@ -83,10 +83,11 @@
           <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-blue-400">
             Venst Uploader
           </span>
-          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Cloud Storage</span>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Cloud Storage System</span>
         </div>
       </div>
 
+      <!-- Storage Status Badge -->
       <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs text-slate-400 shadow-inner">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         Max Limit: <strong class="text-slate-200">50 MB</strong>
@@ -94,21 +95,21 @@
     </div>
   </header>
 
-  <!-- Main Grid Layout -->
+  <!-- Main Content Layout -->
   <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
     
-    <!-- Kolom Kiri: Area Upload (Span 8) -->
+    <!-- Left Column: Upload Area & Result (Span 8) -->
     <div class="lg:col-span-8 space-y-6">
       
-      <!-- Upload Dropzone Box -->
+      <!-- Dropzone Box -->
       <div id="drop-zone" onclick="document.getElementById('file-input').click()" class="glass-card border-2 border-dashed border-slate-700 hover:border-blue-500 rounded-3xl p-10 md:p-14 text-center transition-all duration-300 shadow-2xl relative group cursor-pointer overflow-hidden">
         
         <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-        <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*,application/pdf,.zip,.rar">
+        <input type="file" id="file-input" class="hidden" accept="image/*,video/*,audio/*,application/pdf,.zip,.rar,.txt">
         
         <div class="space-y-6 relative z-10">
           
-          <!-- Logo Cloud Utama -->
+          <!-- Animated Cloud Icon -->
           <div class="relative w-28 h-28 mx-auto">
             <div class="absolute inset-0 bg-blue-500/25 rounded-full blur-xl group-hover:bg-blue-500/45 transition duration-300"></div>
             <div class="relative w-28 h-28 bg-slate-900 border border-slate-700/80 rounded-3xl flex items-center justify-center text-blue-400 shadow-2xl group-hover:scale-105 transition-transform duration-300 animate-float">
@@ -123,18 +124,18 @@
               Klik atau Seret File ke Sini
             </h2>
             <p class="text-sm text-slate-400">
-              Pilih foto, video, dokumen, atau file lain (Maksimal <span class="text-slate-200 font-semibold">50MB</span>)
+              Mendukung Gambar, Video, Musik, Dokumen (Maksimal <span class="text-slate-200 font-semibold">50MB</span>)
             </p>
           </div>
 
           <p class="text-xs text-blue-400/90 font-medium tracking-wide flex items-center justify-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/></svg>
-            Klik area mana saja untuk menjelajahi file
+            Klik area mana saja untuk memilih berkas
           </p>
         </div>
       </div>
 
-      <!-- ANIMATED FUTURISTIC LOADING CARD (NEW & IMPROVED) -->
+      <!-- ANIMATED FUTURISTIC LOADING CARD -->
       <div id="loading-card" class="hidden glass-card rounded-3xl p-8 border border-blue-500/30 text-center space-y-6 relative overflow-hidden shadow-2xl">
         <div class="radar-sweep"></div>
 
@@ -150,15 +151,15 @@
           </div>
 
           <div>
-            <h3 class="text-lg font-bold text-white tracking-wide" id="upload-status-text">Mengunggah File ke Cloud...</h3>
-            <p class="text-xs text-slate-400 mt-1" id="file-uploading-name">Sedang memproses paket data...</p>
+            <h3 class="text-lg font-bold text-white tracking-wide">Mengunggah File ke Cloud...</h3>
+            <p class="text-xs text-slate-400 mt-1 font-mono" id="file-uploading-name">Sedang memproses...</p>
           </div>
         </div>
 
-        <!-- Futuristic Progress Bar -->
+        <!-- Progress Bar Indicator -->
         <div class="space-y-2 relative z-10">
           <div class="flex justify-between text-xs text-slate-400 font-semibold px-1">
-            <span>PROGRESS</span>
+            <span>UPLOADING STATUS</span>
             <span id="progress-percent" class="text-blue-400 font-mono">0%</span>
           </div>
           <div class="w-full bg-slate-900 rounded-full h-3 p-0.5 overflow-hidden border border-slate-800 shadow-inner">
@@ -167,23 +168,23 @@
         </div>
       </div>
 
-      <!-- Status Message Alert -->
+      <!-- Status Alert Box -->
       <div id="status-message" class="hidden p-4 rounded-2xl text-sm font-medium text-center border"></div>
 
-      <!-- Hasil Upload & Preview Card -->
+      <!-- Upload Result & Media Preview Card -->
       <div id="result-card" class="hidden glass-card rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-5 transition-all duration-300">
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <div class="flex items-center gap-2 text-emerald-400 font-bold text-sm">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>Upload Berhasil!</span>
           </div>
-          <span id="file-size-badge" class="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800"></span>
+          <span id="file-size-badge" class="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-mono"></span>
         </div>
 
-        <!-- Preview Container -->
+        <!-- Media Preview Container -->
         <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 flex justify-center items-center min-h-[160px] max-h-[340px] relative"></div>
 
-        <!-- Copy URL Section -->
+        <!-- Generated Custom URL Section -->
         <div class="space-y-2">
           <label class="text-xs text-slate-400 font-semibold tracking-wide uppercase">Direct Custom URL:</label>
           <div class="flex gap-2">
@@ -198,10 +199,10 @@
 
     </div>
 
-    <!-- Kolom Kanan: Panel Pendukung (Span 4) -->
+    <!-- Right Column: Info & Recent Uploads (Span 4) -->
     <div class="lg:col-span-4 space-y-6">
       
-      <!-- Supported File Types -->
+      <!-- Supported File Types Box -->
       <div class="glass-card rounded-3xl p-6 border border-slate-800/80 space-y-4">
         <h3 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">SUPPORTED FILE TYPES</h3>
         <div class="grid grid-cols-3 gap-3">
@@ -232,14 +233,14 @@
             </div>
             <div>
               <p class="text-xs font-bold text-slate-200">Docs</p>
-              <p class="text-[10px] text-slate-400 mt-0.5">PDF, DOCX, ZIP</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">PDF, ZIP, TXT</p>
             </div>
           </div>
 
         </div>
       </div>
 
-      <!-- Recent Uploads Section -->
+      <!-- Recent Uploads List -->
       <div class="glass-card rounded-3xl p-6 border border-slate-800/80 space-y-4">
         <h3 class="text-xs font-extrabold text-slate-300 uppercase tracking-wider">RECENT UPLOADS</h3>
         <div id="recent-list" class="space-y-3">
@@ -253,19 +254,21 @@
 
   <!-- Footer -->
   <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-    <p>&copy; 2026 <span class="text-slate-400 font-semibold">Venst Uploader</span>. Powered by Supabase Storage.</p>
+    <p>&copy; 2026 <span class="text-slate-400 font-semibold">Venst Uploader</span>. Powered by Supabase Storage & Vercel CDN.</p>
   </footer>
 
-  <!-- App Script -->
+  <!-- Application Logic JS -->
   <script>
-    // --- KONFIGURASI SUPABASE ---
-    const SUPABASE_URL = 'https://zthvomcgafenzwqokeec.supabase.co'; // URL Supabase Kamu
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0aHZvbWNnYWZlbnp3cW9rZWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Mjk0MjUsImV4cCI6MjEwMTQwNTQyNX0.mBlZvpytNEOkSY8VEjR7ahc9yiKu_x8TjrT7qOR41mI'; // Ganti dengan Anon Key Supabase kamu
+    // ==========================================
+    // KONFIGURASI SUPABASE (Ganti ANON KEY Kamu)
+    // ==========================================
+    const SUPABASE_URL = 'https://zthvomcgafenzwqokeec.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0aHZvbWNnYWZlbnp3cW9rZWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Mjk0MjUsImV4cCI6MjEwMTQwNTQyNX0.mBlZvpytNEOkSY8VEjR7ahc9yiKu_x8TjrT7qOR41mI'; 
     const BUCKET_NAME = 'venst-media';
 
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // References
+    // DOM Elements
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
     const loadingCard = document.getElementById('loading-card');
@@ -281,7 +284,7 @@
 
     let recentUploadsArray = [];
 
-    // Drag & Drop Effects
+    // Drag & Drop Handling
     ['dragenter', 'dragover'].forEach(eName => {
       dropZone.addEventListener(eName, (e) => {
         e.preventDefault();
@@ -305,7 +308,7 @@
       if (e.target.files.length > 0) handleUpload(e.target.files[0]);
     });
 
-    // Simulated Animated Progress Bar Helper
+    // Helper Progress Bar Animation
     function startProgressAnimation() {
       let currentProgress = 0;
       progressBar.style.width = '0%';
@@ -320,7 +323,7 @@
         } else {
           clearInterval(interval);
         }
-      }, 150);
+      }, 120);
 
       return () => {
         clearInterval(interval);
@@ -329,13 +332,13 @@
       };
     }
 
-    // Handle Upload
+    // Main Upload Logic
     async function handleUpload(file) {
       const MAX_SIZE_MB = 50;
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
       if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        showStatus(`File terlalu besar (${fileSizeMB} MB). Maksimal ukuran file 50MB!`, 'error');
+        showStatus(`File terlalu besar (${fileSizeMB} MB). Maksimal ukuran file adalah 50MB!`, 'error');
         return;
       }
 
@@ -347,54 +350,70 @@
       const finishAnimation = startProgressAnimation();
 
       const fileExt = file.name.split('.').pop();
-      const cleanName = file.name.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${Date.now()}_${cleanName}.${fileExt}`;
+      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+      const fileName = `${Date.now()}_${cleanName}`;
 
       try {
-        // Upload langsung ke Supabase Storage
-        const { data, error } = await supabase.storage
+        // 1. Upload ke Supabase Storage Bucket
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from(BUCKET_NAME)
           .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
-        if (error) throw error;
+        if (uploadError) throw uploadError;
 
-        // Ambil Public URL Resmi Supabase
+        // 2. Ambil Raw Public URL Supabase
         const { data: publicUrlData } = supabase.storage
           .from(BUCKET_NAME)
           .getPublicUrl(fileName);
 
         const rawSupabaseUrl = publicUrlData.publicUrl;
 
-        // Buat Custom Vercel URL
+        // 3. Format URL Sesuai Domain Host
         const currentOrigin = window.location.origin;
         const customVercelUrl = `${currentOrigin}/cdn/${fileName}`;
+        const finalUrl = (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('zone.id'))
+          ? customVercelUrl
+          : rawSupabaseUrl;
 
-        // Selesaikan animasi loading ke 100%
+        // 4. Catat Metadata File ke Tabel Database 'uploads'
+        const { error: dbError } = await supabase
+          .from('uploads')
+          .insert([
+            {
+              file_name: file.name,
+              file_path: fileName,
+              file_size: file.size,
+              mime_type: file.type || 'application/octet-stream',
+              public_url: finalUrl
+            }
+          ]);
+
+        if (dbError) {
+          console.warn("Database Warning:", dbError.message);
+        }
+
+        // 5. Selesaikan Animasi Loading & Tampilkan Hasil
         finishAnimation();
 
         setTimeout(() => {
           loadingCard.classList.add('hidden');
           renderPreview(file, rawSupabaseUrl);
           
-          // Gunakan Custom Vercel URL di input (Atau fallback jika dibuka lokal)
-          urlInput.value = window.location.hostname.includes('vercel.app') || window.location.hostname.includes('venst.zone.id') 
-            ? customVercelUrl 
-            : rawSupabaseUrl;
-
+          urlInput.value = finalUrl;
           fileSizeBadge.innerText = `${fileSizeMB} MB`;
           resultCard.classList.remove('hidden');
 
-          addToRecentUploads(file.name, urlInput.value);
-        }, 500);
+          addToRecentUploads(file.name, finalUrl);
+        }, 400);
 
       } catch (err) {
         finishAnimation();
         loadingCard.classList.add('hidden');
-        showStatus(`Upload Gagal: ${err.message}`, 'error');
+        showStatus(`Upload Gagal: ${err.message || 'Terjadi kesalahan pada jaringan.'}`, 'error');
       }
     }
 
-    // Render Media Preview
+    // Render Media Preview (Images, Videos, Audio, Files)
     function renderPreview(file, url) {
       previewContainer.innerHTML = '';
 
@@ -428,7 +447,7 @@
       }
     }
 
-    // Tambah Ke Daftar Recent Uploads
+    // Add To Recent Uploads List
     function addToRecentUploads(fileName, url) {
       recentUploadsArray.unshift({ name: fileName, url: url });
       if (recentUploadsArray.length > 4) recentUploadsArray.pop();
@@ -447,7 +466,7 @@
       });
     }
 
-    // Copy Link Utama
+    // Copy Main URL
     function copyToClipboard() {
       urlInput.select();
       navigator.clipboard.writeText(urlInput.value);
@@ -464,7 +483,7 @@
       }, 2000);
     }
 
-    // Copy Link dari Histori
+    // Copy Recent History Link
     function copySpecificLink(url, btnElement) {
       navigator.clipboard.writeText(url);
       const originalText = btnElement.innerText;
@@ -477,7 +496,7 @@
       }, 2000);
     }
 
-    // Helper Status Message
+    // Status Alert Helpers
     function showStatus(msg, type) {
       statusMessage.innerText = msg;
       statusMessage.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
