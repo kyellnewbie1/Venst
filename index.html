@@ -11,6 +11,44 @@
   <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <!-- ======================================================== -->
+  <!-- 1. SECURITY SHIELD SCRIPT (ANTI-INSPECT & ANTI-DEBUGGER) -->
+  <!-- ======================================================== -->
+  <script>
+    (function() {
+      // Mematikan Klik Kanan di seluruh dokumen
+      document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      // Mematikan Shortcut Inspect Element, View Source, & Save Page
+      document.addEventListener('keydown', (e) => {
+        if (
+          e.key === 'F12' ||
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+          (e.ctrlKey && (e.key === 'u' || e.key === 'U')) ||
+          (e.ctrlKey && (e.key === 's' || e.key === 'S'))
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Anti-Debugging: Freeze jika DevTools dipaksa buka
+      setInterval(() => {
+        const startTime = performance.now();
+        debugger; // Breakpoint jebakan untuk DevTools
+        const endTime = performance.now();
+        if (endTime - startTime > 100) {
+          document.body.innerHTML = `
+            <div style="background:#020617; color:#f87171; height:100vh; display:flex; flex-direction:column; align-items:center; justify-center:center; font-family:sans-serif; text-align:center; padding:20px;">
+              <h1 style="font-size:2rem; font-weight:bold; margin-bottom:10px;">AKSES DITOLAK</h1>
+              <p style="color:#94a3b8; font-size:0.9rem;">Aktivitas inspeksi kode / DevTools terdeteksi oleh sistem keamanan Venst Uploader.</p>
+            </div>
+          `;
+        }
+      }, 1000);
+    })();
+  </script>
+
   <!-- Custom Styles & Animations -->
   <style>
     @keyframes pulseGlow {
@@ -58,7 +96,7 @@
       animation: scan 2s linear infinite;
     }
 
-    /* Protection styling to prevent image dragging */
+    /* Protection styling to prevent image dragging & text selection */
     #preview-container img, #preview-container video,
     #download-preview-container img, #download-preview-container video {
       -webkit-user-drag: none;
@@ -66,10 +104,18 @@
       -moz-user-select: none;
       -webkit-user-select: none;
       -ms-user-select: none;
+      pointer-events: none;
     }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
+
+  <!-- ======================================================== -->
+  <!-- 2. HONEYPOT TRAP (JEBAKAN BOT / SCRAPER AUTOMATION) -->
+  <!-- ======================================================== -->
+  <div style="display:none !important;" aria-hidden="true">
+    <a href="/api/honeypot-trap" tabindex="-1" rel="nofollow">System Access Link</a>
+  </div>
 
   <!-- Background Ambient Glowing Orbs -->
   <div class="fixed -top-32 -left-32 w-80 h-80 sm:w-96 sm:h-96 bg-blue-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse-glow"></div>
@@ -337,7 +383,7 @@
 
       let recentUploadsArray = [];
 
-      // Proteksi Klik Kanan
+      // Proteksi Klik Kanan Tambahan di Preview Area
       previewContainer.addEventListener('contextmenu', (e) => e.preventDefault());
 
       // Drag & Drop Handling
@@ -480,7 +526,7 @@
           previewContainer.innerHTML = `
             <div class="p-6 text-center space-y-2">
               <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl w-fit mx-auto text-blue-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 01-2-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
               </div>
               <p class="text-xs sm:text-sm font-semibold text-slate-200">${file.name}</p>
               <p class="text-[11px] text-slate-500">Pratinjau tidak tersedia untuk jenis berkas ini</p>
