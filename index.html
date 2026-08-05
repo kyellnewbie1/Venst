@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Venst Uploader - Next-Gen Media Hosting</title>
+  <title>Venst Uploader - Secure Media Hosting</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -57,6 +57,15 @@
       background: linear-gradient(180deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0) 100%);
       animation: scan 2s linear infinite;
     }
+
+    /* Protection styling to prevent image dragging */
+    #preview-container img, #preview-container video {
+      -webkit-user-drag: none;
+      user-select: none;
+      -moz-user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-600 selection:text-white relative overflow-x-hidden">
@@ -83,7 +92,7 @@
           <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-blue-400">
             Venst Uploader
           </span>
-          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Cloud Storage System</span>
+          <span class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Protected Storage System</span>
         </div>
       </div>
 
@@ -181,12 +190,12 @@
           <span id="file-size-badge" class="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-mono"></span>
         </div>
 
-        <!-- Media Preview Container -->
-        <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 flex justify-center items-center min-h-[160px] max-h-[340px] relative"></div>
+        <!-- Media Preview Container (Dilengkapi fitur anti klik kanan) -->
+        <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 flex justify-center items-center min-h-[160px] max-h-[340px] relative select-none"></div>
 
-        <!-- Generated Custom URL Section -->
+        <!-- Protected Custom URL Section -->
         <div class="space-y-2">
-          <label class="text-xs text-slate-400 font-semibold tracking-wide uppercase">Direct Custom URL:</label>
+          <label class="text-xs text-slate-400 font-semibold tracking-wide uppercase">Protected Direct URL:</label>
           <div class="flex gap-2">
             <input type="text" id="url-input" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-blue-300 focus:outline-none font-mono">
             <button onclick="copyToClipboard()" id="copy-btn" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition duration-200 flex items-center gap-1.5 flex-shrink-0">
@@ -219,7 +228,7 @@
 
           <div class="bg-slate-900/90 border border-slate-800 p-3 rounded-2xl text-center space-y-2 hover:border-slate-700 transition">
             <div class="w-10 h-10 mx-auto bg-purple-500/10 text-purple-400 rounded-xl flex items-center justify-center border border-purple-500/20">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             </div>
             <div>
               <p class="text-xs font-bold text-slate-200">Videos</p>
@@ -254,7 +263,7 @@
 
   <!-- Footer -->
   <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
-    <p>&copy; 2026 <span class="text-slate-400 font-semibold">Venst Uploader</span>. Powered by Supabase Storage & Vercel CDN.</p>
+    <p>&copy; 2026 <span class="text-slate-400 font-semibold">Venst Uploader</span>. Protected Cloud Storage.</p>
   </footer>
 
   <!-- Application Logic JS -->
@@ -266,7 +275,7 @@
       const BUCKET_NAME = 'venst-media';
       const CUSTOM_DOMAIN = 'https://venst.zone.id';
 
-      // Inisialisasi Supabase Client secara aman
+      // Inisialisasi Supabase Client
       const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       // DOM Elements
@@ -284,6 +293,11 @@
       const recentList = document.getElementById('recent-list');
 
       let recentUploadsArray = [];
+
+      // Proteksi Klik Kanan di Area Preview Media
+      previewContainer.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
 
       // Drag & Drop Handling
       ['dragenter', 'dragover'].forEach(eName => {
@@ -363,9 +377,9 @@
 
           if (uploadError) throw uploadError;
 
-          // 2. Buat URL Custom secara langsung
-          const rawPath = `/storage/v1/object/public/${BUCKET_NAME}/${fileName}`;
-          const finalUrl = `${CUSTOM_DOMAIN}${rawPath}`;
+          // 2. OBFUSCATED PROTECTED URL (Menyembunyikan Struktur Supabase)
+          // Menggunakan endpoint /file/ alih-alih /storage/v1/object/public/
+          const finalUrl = `${CUSTOM_DOMAIN}/file/${fileName}`;
 
           // 3. Catat ke Database 'uploads'
           const { error: dbError } = await supabaseClient
@@ -414,18 +428,20 @@
         if (file.type.startsWith('image/')) {
           const img = document.createElement('img');
           img.src = url;
-          img.className = 'max-h-[300px] w-auto object-contain rounded-xl p-2';
+          img.className = 'max-h-[300px] w-auto object-contain rounded-xl p-2 pointer-events-none';
           previewContainer.appendChild(img);
         } else if (file.type.startsWith('video/')) {
           const video = document.createElement('video');
           video.src = url;
           video.controls = true;
+          video.controlsList = "nodownload"; // Sembunyikan tombol download di video player
           video.className = 'max-h-[300px] w-full rounded-xl p-2';
           previewContainer.appendChild(video);
         } else if (file.type.startsWith('audio/')) {
           const audio = document.createElement('audio');
           audio.src = url;
           audio.controls = true;
+          audio.controlsList = "nodownload"; // Sembunyikan tombol download audio
           audio.className = 'w-full p-4';
           previewContainer.appendChild(audio);
         } else {
