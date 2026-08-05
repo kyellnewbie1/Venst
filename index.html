@@ -362,14 +362,15 @@
 
           if (uploadError) throw uploadError;
 
-          // 2. Ambil Public URL
+          // 2. Ambil Public URL lalu ubah domainnya ke https://venst.zone.id
           const { data: publicUrlData } = supabaseClient.storage
             .from(BUCKET_NAME)
             .getPublicUrl(fileName);
 
-          const finalUrl = publicUrlData.publicUrl;
+          const parsedUrl = new URL(publicUrlData.publicUrl);
+          const finalUrl = `https://venst.zone.id${parsedUrl.pathname}`;
 
-          // 3. Catat ke Database 'uploads' (Ambil dbError tanpa .catch())
+          // 3. Catat ke Database 'uploads'
           const { error: dbError } = await supabaseClient
             .from('uploads')
             .insert([
