@@ -190,8 +190,8 @@
           <span id="file-size-badge" class="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-mono"></span>
         </div>
 
-        <!-- Media Preview Container (Dilengkapi fitur anti klik kanan) -->
-        <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 flex justify-center items-center min-h-[160px] max-h-[340px] relative select-none"></div>
+        <!-- Media Preview Container (Rasio responsif & fleksibel) -->
+        <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950/80 border border-slate-800/80 flex justify-center items-center min-h-[200px] p-2 relative select-none"></div>
 
         <!-- Protected Custom URL Section -->
         <div class="space-y-2">
@@ -378,7 +378,6 @@
           if (uploadError) throw uploadError;
 
           // 2. OBFUSCATED PROTECTED URL (Menyembunyikan Struktur Supabase)
-          // Menggunakan endpoint /file/ alih-alih /storage/v1/object/public/
           const finalUrl = `${CUSTOM_DOMAIN}/file/${fileName}`;
 
           // 3. Catat ke Database 'uploads'
@@ -421,27 +420,28 @@
         }
       }
 
-      // Render Media Preview
+      // Render Media Preview (Diperbaiki agar rasio 1:1, 9:16, 16:9 pas dan presisi)
       function renderPreview(file, url) {
         previewContainer.innerHTML = '';
 
         if (file.type.startsWith('image/')) {
           const img = document.createElement('img');
           img.src = url;
-          img.className = 'max-h-[300px] w-auto object-contain rounded-xl p-2 pointer-events-none';
+          // Menggunakan max-h-[380px] & max-w-full agar gambar fleksibel mempertahankan rasio aslinya
+          img.className = 'max-h-[380px] max-w-full h-auto w-auto object-contain rounded-xl shadow-md pointer-events-none';
           previewContainer.appendChild(img);
         } else if (file.type.startsWith('video/')) {
           const video = document.createElement('video');
           video.src = url;
           video.controls = true;
-          video.controlsList = "nodownload"; // Sembunyikan tombol download di video player
-          video.className = 'max-h-[300px] w-full rounded-xl p-2';
+          video.controlsList = "nodownload";
+          video.className = 'max-h-[380px] max-w-full h-auto rounded-xl shadow-md';
           previewContainer.appendChild(video);
         } else if (file.type.startsWith('audio/')) {
           const audio = document.createElement('audio');
           audio.src = url;
           audio.controls = true;
-          audio.controlsList = "nodownload"; // Sembunyikan tombol download audio
+          audio.controlsList = "nodownload";
           audio.className = 'w-full p-4';
           previewContainer.appendChild(audio);
         } else {
