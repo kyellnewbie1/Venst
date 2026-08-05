@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/storage/v1/:match*",
-      "destination": "https://zthvomcgafenzwqokeec.supabase.co/storage/v1/:match*"
+      "source": "/file/:path*",
+      "destination": "https://zthvomcgafenzwqokeec.supabase.co/storage/v1/object/public/venst-media/:path*"
     }
   ]
 }
