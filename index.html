@@ -8,7 +8,7 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Supabase JS Client -->
+  <!-- Supabase JS Client CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Custom Styles & Animations -->
@@ -98,7 +98,7 @@
   <!-- Main Content Layout -->
   <main class="max-w-6xl w-full mx-auto px-6 py-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
     
-    <!-- Left Column: Upload Area & Result (Span 8) -->
+    <!-- Left Column: Upload Area & Result -->
     <div class="lg:col-span-8 space-y-6">
       
       <!-- Dropzone Box -->
@@ -199,7 +199,7 @@
 
     </div>
 
-    <!-- Right Column: Info & Recent Uploads (Span 4) -->
+    <!-- Right Column: Info & Recent Uploads -->
     <div class="lg:col-span-4 space-y-6">
       
       <!-- Supported File Types Box -->
@@ -259,258 +259,257 @@
 
   <!-- Application Logic JS -->
   <script>
-    // ==========================================
-    // KONFIGURASI SUPABASE (Ganti ANON KEY Kamu)
-    // ==========================================
-    const SUPABASE_URL = 'https://zthvomcgafenzwqokeec.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0aHZvbWNnYWZlbnp3cW9rZWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Mjk0MjUsImV4cCI6MjEwMTQwNTQyNX0.mBlZvpytNEOkSY8VEjR7ahc9yiKu_x8TjrT7qOR41mI'; 
-    const BUCKET_NAME = 'venst-media';
+    window.addEventListener('DOMContentLoaded', () => {
+      // KONFIGURASI SUPABASE
+      const SUPABASE_URL = 'https://zthvomcgafenzwqokeec.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0aHZvbWNnYWZlbnp3cW9rZWVjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4Mjk0MjUsImV4cCI6MjEwMTQwNTQyNX0.mBlZvpytNEOkSY8VEjR7ahc9yiKu_x8TjrT7qOR41mI'; 
+      const BUCKET_NAME = 'venst-media';
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Inisialisasi Supabase Client secara aman
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // DOM Elements
-    const dropZone = document.getElementById('drop-zone');
-    const fileInput = document.getElementById('file-input');
-    const loadingCard = document.getElementById('loading-card');
-    const progressBar = document.getElementById('progress-bar');
-    const progressPercent = document.getElementById('progress-percent');
-    const fileUploadingName = document.getElementById('file-uploading-name');
-    const statusMessage = document.getElementById('status-message');
-    const resultCard = document.getElementById('result-card');
-    const previewContainer = document.getElementById('preview-container');
-    const urlInput = document.getElementById('url-input');
-    const fileSizeBadge = document.getElementById('file-size-badge');
-    const recentList = document.getElementById('recent-list');
+      // DOM Elements
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input');
+      const loadingCard = document.getElementById('loading-card');
+      const progressBar = document.getElementById('progress-bar');
+      const progressPercent = document.getElementById('progress-percent');
+      const fileUploadingName = document.getElementById('file-uploading-name');
+      const statusMessage = document.getElementById('status-message');
+      const resultCard = document.getElementById('result-card');
+      const previewContainer = document.getElementById('preview-container');
+      const urlInput = document.getElementById('url-input');
+      const fileSizeBadge = document.getElementById('file-size-badge');
+      const recentList = document.getElementById('recent-list');
 
-    let recentUploadsArray = [];
+      let recentUploadsArray = [];
 
-    // Drag & Drop Handling
-    ['dragenter', 'dragover'].forEach(eName => {
-      dropZone.addEventListener(eName, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-blue-500', 'bg-blue-500/10');
+      // Drag & Drop Handling
+      ['dragenter', 'dragover'].forEach(eName => {
+        dropZone.addEventListener(eName, (e) => {
+          e.preventDefault();
+          dropZone.classList.add('border-blue-500', 'bg-blue-500/10');
+        });
       });
-    });
 
-    ['dragleave', 'drop'].forEach(eName => {
-      dropZone.addEventListener(eName, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-blue-500', 'bg-blue-500/10');
+      ['dragleave', 'drop'].forEach(eName => {
+        dropZone.addEventListener(eName, (e) => {
+          e.preventDefault();
+          dropZone.classList.remove('border-blue-500', 'bg-blue-500/10');
+        });
       });
-    });
 
-    dropZone.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) handleUpload(files[0]);
-    });
+      dropZone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleUpload(files[0]);
+      });
 
-    fileInput.addEventListener('change', (e) => {
-      if (e.target.files.length > 0) handleUpload(e.target.files[0]);
-    });
-
-    // Helper Progress Bar Animation
-    function startProgressAnimation() {
-      let currentProgress = 0;
-      progressBar.style.width = '0%';
-      progressPercent.innerText = '0%';
-
-      const interval = setInterval(() => {
-        if (currentProgress < 90) {
-          currentProgress += Math.floor(Math.random() * 12) + 5;
-          if (currentProgress > 90) currentProgress = 90;
-          progressBar.style.width = `${currentProgress}%`;
-          progressPercent.innerText = `${currentProgress}%`;
-        } else {
-          clearInterval(interval);
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleUpload(e.target.files[0]);
         }
-      }, 120);
+      });
 
-      return () => {
-        clearInterval(interval);
-        progressBar.style.width = '100%';
-        progressPercent.innerText = '100%';
-      };
-    }
+      // Helper Progress Bar Animation
+      function startProgressAnimation() {
+        let currentProgress = 0;
+        progressBar.style.width = '0%';
+        progressPercent.innerText = '0%';
 
-    // Main Upload Logic
-    async function handleUpload(file) {
-      const MAX_SIZE_MB = 50;
-      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const interval = setInterval(() => {
+          if (currentProgress < 90) {
+            currentProgress += Math.floor(Math.random() * 12) + 5;
+            if (currentProgress > 90) currentProgress = 90;
+            progressBar.style.width = `${currentProgress}%`;
+            progressPercent.innerText = `${currentProgress}%`;
+          } else {
+            clearInterval(interval);
+          }
+        }, 120);
 
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        showStatus(`File terlalu besar (${fileSizeMB} MB). Maksimal ukuran file adalah 50MB!`, 'error');
-        return;
+        return () => {
+          clearInterval(interval);
+          progressBar.style.width = '100%';
+          progressPercent.innerText = '100%';
+        };
       }
 
-      hideStatus();
-      resultCard.classList.add('hidden');
-      loadingCard.classList.remove('hidden');
-      fileUploadingName.innerText = file.name;
+      // Main Upload Logic
+      async function handleUpload(file) {
+        const MAX_SIZE_MB = 50;
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
 
-      const finishAnimation = startProgressAnimation();
-
-      const fileExt = file.name.split('.').pop();
-      const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-      const fileName = `${Date.now()}_${cleanName}`;
-
-      try {
-        // 1. Upload ke Supabase Storage Bucket
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from(BUCKET_NAME)
-          .upload(fileName, file, { cacheControl: '3600', upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        // 2. Ambil Raw Public URL Supabase
-        const { data: publicUrlData } = supabase.storage
-          .from(BUCKET_NAME)
-          .getPublicUrl(fileName);
-
-        const rawSupabaseUrl = publicUrlData.publicUrl;
-
-        // 3. Format URL Sesuai Domain Host
-        const currentOrigin = window.location.origin;
-        const customVercelUrl = `${currentOrigin}/cdn/${fileName}`;
-        const finalUrl = (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('zone.id'))
-          ? customVercelUrl
-          : rawSupabaseUrl;
-
-        // 4. Catat Metadata File ke Tabel Database 'uploads'
-        const { error: dbError } = await supabase
-          .from('uploads')
-          .insert([
-            {
-              file_name: file.name,
-              file_path: fileName,
-              file_size: file.size,
-              mime_type: file.type || 'application/octet-stream',
-              public_url: finalUrl
-            }
-          ]);
-
-        if (dbError) {
-          console.warn("Database Warning:", dbError.message);
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          showStatus(`File terlalu besar (${fileSizeMB} MB). Maksimal ukuran file adalah 50MB!`, 'error');
+          return;
         }
 
-        // 5. Selesaikan Animasi Loading & Tampilkan Hasil
-        finishAnimation();
+        hideStatus();
+        resultCard.classList.add('hidden');
+        loadingCard.classList.remove('hidden');
+        fileUploadingName.innerText = file.name;
+
+        const finishAnimation = startProgressAnimation();
+
+        const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+        const fileName = `${Date.now()}_${cleanName}`;
+
+        try {
+          // 1. Upload ke Supabase Storage Bucket
+          const { data: uploadData, error: uploadError } = await supabaseClient.storage
+            .from(BUCKET_NAME)
+            .upload(fileName, file, { cacheControl: '3600', upsert: true });
+
+          if (uploadError) throw uploadError;
+
+          // 2. Ambil Public URL
+          const { data: publicUrlData } = supabaseClient.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(fileName);
+
+          const finalUrl = publicUrlData.publicUrl;
+
+          // 3. Catat ke Database 'uploads' (Opsional)
+          await supabaseClient
+            .from('uploads')
+            .insert([
+              {
+                file_name: file.name,
+                file_path: fileName,
+                file_size: file.size,
+                mime_type: file.type || 'application/octet-stream',
+                public_url: finalUrl
+              }
+            ]).catch(err => console.warn("DB Log skipped:", err));
+
+          // 4. Selesaikan Animasi Loading & Tampilkan Hasil
+          finishAnimation();
+
+          setTimeout(() => {
+            loadingCard.classList.add('hidden');
+            renderPreview(file, finalUrl);
+            
+            urlInput.value = finalUrl;
+            fileSizeBadge.innerText = `${fileSizeMB} MB`;
+            resultCard.classList.remove('hidden');
+
+            addToRecentUploads(file.name, finalUrl);
+            fileInput.value = ""; // Reset input file
+          }, 400);
+
+        } catch (err) {
+          finishAnimation();
+          loadingCard.classList.add('hidden');
+          showStatus(`Upload Gagal: ${err.message || 'Terjadi kesalahan saat mengunggah.'}`, 'error');
+          fileInput.value = "";
+        }
+      }
+
+      // Render Media Preview
+      function renderPreview(file, url) {
+        previewContainer.innerHTML = '';
+
+        if (file.type.startsWith('image/')) {
+          const img = document.createElement('img');
+          img.src = url;
+          img.className = 'max-h-[300px] w-auto object-contain rounded-xl p-2';
+          previewContainer.appendChild(img);
+        } else if (file.type.startsWith('video/')) {
+          const video = document.createElement('video');
+          video.src = url;
+          video.controls = true;
+          video.className = 'max-h-[300px] w-full rounded-xl p-2';
+          previewContainer.appendChild(video);
+        } else if (file.type.startsWith('audio/')) {
+          const audio = document.createElement('audio');
+          audio.src = url;
+          audio.controls = true;
+          audio.className = 'w-full p-4';
+          previewContainer.appendChild(audio);
+        } else {
+          previewContainer.innerHTML = `
+            <div class="p-8 text-center space-y-2">
+              <div class="p-3 bg-slate-900 border border-slate-800 rounded-2xl w-fit mx-auto text-blue-400">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <p class="text-sm font-semibold text-slate-200">${file.name}</p>
+              <p class="text-xs text-slate-500">Pratinjau tidak tersedia untuk jenis berkas ini</p>
+            </div>
+          `;
+        }
+      }
+
+      // Add To Recent Uploads List
+      function addToRecentUploads(fileName, url) {
+        recentUploadsArray.unshift({ name: fileName, url: url });
+        if (recentUploadsArray.length > 4) recentUploadsArray.pop();
+
+        recentList.innerHTML = '';
+        recentUploadsArray.forEach((item) => {
+          const div = document.createElement('div');
+          div.className = 'flex items-center justify-between bg-slate-900/80 border border-slate-800/80 p-2.5 rounded-2xl gap-2';
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'text-xs text-slate-300 truncate max-w-[130px] font-medium';
+          nameSpan.innerText = item.name;
+
+          const copyBtn = document.createElement('button');
+          copyBtn.className = 'bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0';
+          copyBtn.innerText = 'Copy Link';
+          copyBtn.onclick = () => copySpecificLink(item.url, copyBtn);
+
+          div.appendChild(nameSpan);
+          div.appendChild(copyBtn);
+          recentList.appendChild(div);
+        });
+      }
+
+      // Copy Main URL
+      window.copyToClipboard = function() {
+        urlInput.select();
+        navigator.clipboard.writeText(urlInput.value);
+
+        const copyBtn = document.getElementById('copy-btn');
+        const copyText = document.getElementById('copy-text');
+
+        copyText.innerText = 'Copied!';
+        copyBtn.classList.replace('bg-slate-800', 'bg-emerald-600');
 
         setTimeout(() => {
-          loadingCard.classList.add('hidden');
-          renderPreview(file, rawSupabaseUrl);
-          
-          urlInput.value = finalUrl;
-          fileSizeBadge.innerText = `${fileSizeMB} MB`;
-          resultCard.classList.remove('hidden');
+          copyText.innerText = 'Copy Link';
+          copyBtn.classList.replace('bg-emerald-600', 'bg-slate-800');
+        }, 2000);
+      };
 
-          addToRecentUploads(file.name, finalUrl);
-        }, 400);
-
-      } catch (err) {
-        finishAnimation();
-        loadingCard.classList.add('hidden');
-        showStatus(`Upload Gagal: ${err.message || 'Terjadi kesalahan pada jaringan.'}`, 'error');
+      // Copy Recent History Link
+      function copySpecificLink(url, btnElement) {
+        navigator.clipboard.writeText(url);
+        const originalText = btnElement.innerText;
+        btnElement.innerText = 'Copied!';
+        btnElement.classList.add('bg-emerald-600', 'text-white');
+        
+        setTimeout(() => {
+          btnElement.innerText = originalText;
+          btnElement.classList.remove('bg-emerald-600', 'text-white');
+        }, 2000);
       }
-    }
 
-    // Render Media Preview (Images, Videos, Audio, Files)
-    function renderPreview(file, url) {
-      previewContainer.innerHTML = '';
-
-      if (file.type.startsWith('image/')) {
-        const img = document.createElement('img');
-        img.src = url;
-        img.className = 'max-h-[300px] w-auto object-contain rounded-xl p-2';
-        previewContainer.appendChild(img);
-      } else if (file.type.startsWith('video/')) {
-        const video = document.createElement('video');
-        video.src = url;
-        video.controls = true;
-        video.className = 'max-h-[300px] w-full rounded-xl p-2';
-        previewContainer.appendChild(video);
-      } else if (file.type.startsWith('audio/')) {
-        const audio = document.createElement('audio');
-        audio.src = url;
-        audio.controls = true;
-        audio.className = 'w-full p-4';
-        previewContainer.appendChild(audio);
-      } else {
-        previewContainer.innerHTML = `
-          <div class="p-8 text-center space-y-2">
-            <div class="p-3 bg-slate-900 border border-slate-800 rounded-2xl w-fit mx-auto text-blue-400">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            </div>
-            <p class="text-sm font-semibold text-slate-200">${file.name}</p>
-            <p class="text-xs text-slate-500">Pratinjau tidak tersedia untuk jenis berkas ini</p>
-          </div>
-        `;
+      // Status Alert Helpers
+      function showStatus(msg, type) {
+        statusMessage.innerText = msg;
+        statusMessage.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+        
+        if (type === 'error') {
+          statusMessage.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
+        } else {
+          statusMessage.classList.add('bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+        }
       }
-    }
 
-    // Add To Recent Uploads List
-    function addToRecentUploads(fileName, url) {
-      recentUploadsArray.unshift({ name: fileName, url: url });
-      if (recentUploadsArray.length > 4) recentUploadsArray.pop();
-
-      recentList.innerHTML = '';
-      recentUploadsArray.forEach((item) => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between bg-slate-900/80 border border-slate-800/80 p-2.5 rounded-2xl gap-2';
-        div.innerHTML = `
-          <span class="text-xs text-slate-300 truncate max-w-[130px] font-medium">${item.name}</span>
-          <button onclick="copySpecificLink('${item.url}', this)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] px-3 py-1.5 rounded-xl font-medium transition flex-shrink-0">
-            Copy Link
-          </button>
-        `;
-        recentList.appendChild(div);
-      });
-    }
-
-    // Copy Main URL
-    function copyToClipboard() {
-      urlInput.select();
-      navigator.clipboard.writeText(urlInput.value);
-
-      const copyBtn = document.getElementById('copy-btn');
-      const copyText = document.getElementById('copy-text');
-
-      copyText.innerText = 'Copied!';
-      copyBtn.classList.replace('bg-slate-800', 'bg-emerald-600');
-
-      setTimeout(() => {
-        copyText.innerText = 'Copy Link';
-        copyBtn.classList.replace('bg-emerald-600', 'bg-slate-800');
-      }, 2000);
-    }
-
-    // Copy Recent History Link
-    function copySpecificLink(url, btnElement) {
-      navigator.clipboard.writeText(url);
-      const originalText = btnElement.innerText;
-      btnElement.innerText = 'Copied!';
-      btnElement.classList.add('bg-emerald-600', 'text-white');
-      
-      setTimeout(() => {
-        btnElement.innerText = originalText;
-        btnElement.classList.remove('bg-emerald-600', 'text-white');
-      }, 2000);
-    }
-
-    // Status Alert Helpers
-    function showStatus(msg, type) {
-      statusMessage.innerText = msg;
-      statusMessage.classList.remove('hidden', 'bg-red-500/10', 'text-red-400', 'border-red-500/20', 'bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
-      
-      if (type === 'error') {
-        statusMessage.classList.add('bg-red-500/10', 'text-red-400', 'border-red-500/20');
-      } else {
-        statusMessage.classList.add('bg-blue-500/10', 'text-blue-400', 'border-blue-500/20');
+      function hideStatus() {
+        statusMessage.classList.add('hidden');
       }
-    }
-
-    function hideStatus() {
-      statusMessage.classList.add('hidden');
-    }
+    });
   </script>
 </body>
 </html>
