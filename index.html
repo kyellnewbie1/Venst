@@ -59,7 +59,8 @@
     }
 
     /* Protection styling to prevent image dragging */
-    #preview-container img, #preview-container video {
+    #preview-container img, #preview-container video,
+    #download-preview-container img, #download-preview-container video {
       -webkit-user-drag: none;
       user-select: none;
       -moz-user-select: none;
@@ -190,7 +191,7 @@
           <span id="file-size-badge" class="text-xs bg-slate-900 text-slate-400 px-3 py-1 rounded-full border border-slate-800 font-mono"></span>
         </div>
 
-        <!-- Media Preview Container (Rasio responsif & fleksibel) -->
+        <!-- Media Preview Container -->
         <div id="preview-container" class="rounded-2xl overflow-hidden bg-slate-950/80 border border-slate-800/80 flex justify-center items-center min-h-[200px] p-2 relative select-none"></div>
 
         <!-- Protected Custom URL Section -->
@@ -202,6 +203,48 @@
               <svg id="copy-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               <span id="copy-text">Copy Link</span>
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- BAGIAN KHUSUS DOWNLOAD MEDIA DENGAN URL VENST.ZONE.ID -->
+      <!-- ======================================================== -->
+      <div class="glass-card rounded-3xl p-6 border border-slate-800 shadow-2xl space-y-5">
+        <div class="flex items-center gap-3 border-b border-slate-800/80 pb-4">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">Download & Fetch Media</h3>
+            <p class="text-xs text-slate-400">Masukkan URL venst.zone.id untuk melihat & menyimpan file ke perangkat</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input type="text" id="download-url-input" placeholder="https://venst.zone.id/file/17123_namafile.png" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition font-mono">
+          <button onclick="fetchAndPreviewMedia()" id="fetch-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition duration-200 flex items-center justify-center gap-2 flex-shrink-0 shadow-lg shadow-indigo-600/25">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Cari File</span>
+          </button>
+        </div>
+
+        <!-- Result Box For Downloaded Media -->
+        <div id="download-result-box" class="hidden space-y-4 pt-2">
+          <div id="download-preview-container" class="rounded-2xl overflow-hidden bg-slate-950 border border-slate-800/80 flex justify-center items-center min-h-[160px] p-2 relative"></div>
+          
+          <div class="flex items-center justify-between bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl">
+            <div class="truncate max-w-[200px] sm:max-w-[320px]">
+              <p id="download-file-name" class="text-xs font-bold text-slate-200 truncate font-mono">nama_file.jpg</p>
+              <p id="download-file-type" class="text-[10px] text-slate-400 mt-0.5 uppercase tracking-wide">IMAGE / MEDIA</p>
+            </div>
+            
+            <a id="direct-download-btn" href="#" download target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition duration-200 flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Download / Simpan</span>
+            </a>
           </div>
         </div>
       </div>
@@ -294,10 +337,8 @@
 
       let recentUploadsArray = [];
 
-      // Proteksi Klik Kanan di Area Preview Media
-      previewContainer.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-      });
+      // Proteksi Klik Kanan
+      previewContainer.addEventListener('contextmenu', (e) => e.preventDefault());
 
       // Drag & Drop Handling
       ['dragenter', 'dragover'].forEach(eName => {
@@ -370,18 +411,15 @@
         const fileName = `${Date.now()}_${cleanName}`;
 
         try {
-          // 1. Upload ke Supabase Storage Bucket
           const { data: uploadData, error: uploadError } = await supabaseClient.storage
             .from(BUCKET_NAME)
             .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
           if (uploadError) throw uploadError;
 
-          // 2. OBFUSCATED PROTECTED URL (Menyembunyikan Struktur Supabase)
           const finalUrl = `${CUSTOM_DOMAIN}/file/${fileName}`;
 
-          // 3. Catat ke Database 'uploads'
-          const { error: dbError } = await supabaseClient
+          await supabaseClient
             .from('uploads')
             .insert([
               {
@@ -393,11 +431,6 @@
               }
             ]);
 
-          if (dbError) {
-            console.warn("DB Log Warning:", dbError.message);
-          }
-
-          // 4. Selesaikan Animasi Loading & Tampilkan Hasil
           finishAnimation();
 
           setTimeout(() => {
@@ -409,7 +442,7 @@
             resultCard.classList.remove('hidden');
 
             addToRecentUploads(file.name, finalUrl);
-            fileInput.value = ""; // Reset input file
+            fileInput.value = "";
           }, 400);
 
         } catch (err) {
@@ -420,14 +453,13 @@
         }
       }
 
-      // Render Media Preview (Diperbaiki agar rasio 1:1, 9:16, 16:9 pas dan presisi)
+      // Render Media Preview
       function renderPreview(file, url) {
         previewContainer.innerHTML = '';
 
         if (file.type.startsWith('image/')) {
           const img = document.createElement('img');
           img.src = url;
-          // Menggunakan max-h-[380px] & max-w-full agar gambar fleksibel mempertahankan rasio aslinya
           img.className = 'max-h-[380px] max-w-full h-auto w-auto object-contain rounded-xl shadow-md pointer-events-none';
           previewContainer.appendChild(img);
         } else if (file.type.startsWith('video/')) {
@@ -527,6 +559,68 @@
       function hideStatus() {
         statusMessage.classList.add('hidden');
       }
+
+      // ========================================================
+      // LOGIC DOWNLOAER MEDIA
+      // ========================================================
+      window.fetchAndPreviewMedia = function() {
+        const inputUrl = document.getElementById('download-url-input').value.trim();
+        const resultBox = document.getElementById('download-result-box');
+        const previewContainer = document.getElementById('download-preview-container');
+        const fileNameEl = document.getElementById('download-file-name');
+        const fileTypeEl = document.getElementById('download-file-type');
+        const downloadBtn = document.getElementById('direct-download-btn');
+
+        if (!inputUrl) {
+          alert('Silakan masukkan URL file terlebih dahulu!');
+          return;
+        }
+
+        // Ambil nama file dari URL
+        const fileName = inputUrl.split('/').pop();
+        const extension = fileName.split('.').pop().toLowerCase();
+
+        fileNameEl.innerText = fileName;
+        downloadBtn.href = inputUrl;
+        downloadBtn.setAttribute('download', fileName);
+
+        previewContainer.innerHTML = '';
+
+        // Deteksi Format File
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+          fileTypeEl.innerText = 'IMAGE FILE';
+          const img = document.createElement('img');
+          img.src = inputUrl;
+          img.className = 'max-h-[300px] max-w-full h-auto w-auto object-contain rounded-xl';
+          previewContainer.appendChild(img);
+        } else if (['mp4', 'webm', 'mkv', 'mov'].includes(extension)) {
+          fileTypeEl.innerText = 'VIDEO FILE';
+          const video = document.createElement('video');
+          video.src = inputUrl;
+          video.controls = true;
+          video.className = 'max-h-[300px] max-w-full h-auto rounded-xl';
+          previewContainer.appendChild(video);
+        } else if (['mp3', 'wav', 'ogg'].includes(extension)) {
+          fileTypeEl.innerText = 'AUDIO FILE';
+          const audio = document.createElement('audio');
+          audio.src = inputUrl;
+          audio.controls = true;
+          audio.className = 'w-full p-4';
+          previewContainer.appendChild(audio);
+        } else {
+          fileTypeEl.innerText = 'DOCUMENT / ARCHIVE';
+          previewContainer.innerHTML = `
+            <div class="p-6 text-center space-y-2">
+              <div class="p-3 bg-slate-900 border border-slate-800 rounded-2xl w-fit mx-auto text-indigo-400">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <p class="text-xs text-slate-400">Klik tombol di bawah untuk langsung mengunduh berkas</p>
+            </div>
+          `;
+        }
+
+        resultBox.classList.remove('hidden');
+      };
     });
   </script>
 </body>
