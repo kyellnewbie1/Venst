@@ -369,8 +369,8 @@
 
           const finalUrl = publicUrlData.publicUrl;
 
-          // 3. Catat ke Database 'uploads' (Opsional)
-          await supabaseClient
+          // 3. Catat ke Database 'uploads' (Ambil dbError tanpa .catch())
+          const { error: dbError } = await supabaseClient
             .from('uploads')
             .insert([
               {
@@ -380,7 +380,11 @@
                 mime_type: file.type || 'application/octet-stream',
                 public_url: finalUrl
               }
-            ]).catch(err => console.warn("DB Log skipped:", err));
+            ]);
+
+          if (dbError) {
+            console.warn("DB Log Warning:", dbError.message);
+          }
 
           // 4. Selesaikan Animasi Loading & Tampilkan Hasil
           finishAnimation();
