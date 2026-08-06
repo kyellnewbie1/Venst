@@ -1,9 +1,17 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/file/:path*",
       "destination": "https://zthvomcgafenzwqokeec.supabase.co/storage/v1/object/public/venst-media/:path*"
+    },
+    {
+      "source": "/api/tourl",
+      "destination": "/api/tourl.js"
+    },
+    {
+      "source": "/api/download",
+      "destination": "/api/download.js"
     }
   ]
 }
-
