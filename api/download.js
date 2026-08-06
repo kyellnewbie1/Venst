@@ -7,7 +7,15 @@ const BUCKET_NAME = 'venst-media';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default async function handler(req, res) {
+  // 1. Set CORS Headers lengkap
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Tangani preflight request dari browser
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   const fileParam = req.query.file || req.query.url;
 
@@ -18,7 +26,9 @@ export default async function handler(req, res) {
     });
   }
 
-  const fileName = fileParam.includes('/') ? fileParam.split('/').pop() : fileParam;
+  // Bersihkan parameter dari path URL/query string jika yang di-pass berupa URL penuh
+  const cleanParam = fileParam.split('?')[0];
+  const fileName = cleanParam.includes('/') ? cleanParam.split('/').pop() : cleanParam;
 
   try {
     const { data, error } = await supabase.storage
@@ -32,8 +42,14 @@ export default async function handler(req, res) {
     const arrayBuffer = await data.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    res.setHeader('Content-Type', data.type || 'application/octet-stream');
-    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    // Gunakan Content-Type asli dari Supabase
+    const contentType = data.type || 'application/octet-stream';
+    res.setHeader('Content-Type', contentType);
+
+    // Gunakan 'inline' agar file (seperti gambar) bisa langsung tampil di browser/tag <img>.
+    // Jika query ?download=true ada, baru paksa download (attachment).
+    const isDownload = req.query.download === 'true';
+    res.setHeader('Content-Disposition', `${isDownload ? 'attachment' : 'inline'}; filename="${fileName}"`);
     res.setHeader('Content-Length', buffer.length);
 
     return res.send(buffer);
