@@ -1,4 +1,4 @@
-import { createClient } = require('@supabase/supabase-js');
+import { createClient } from '@supabase/supabase-js';
 import Busboy from 'busboy';
 
 const SUPABASE_URL = 'https://zthvomcgafenzwqokeec.supabase.co';
@@ -16,7 +16,7 @@ export const config = {
 
 export default async function handler(req, res) {
   // CORS Headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
@@ -29,68 +29,84 @@ export default async function handler(req, res) {
     return res.status(405).json({ status: false, message: 'Method Not Allowed' });
   }
 
-  try {
-    const busboy = Busboy({ headers: req.headers });
-    let fileBuffer = [];
-    let fileName = '';
-    let mimeType = '';
+  // Bungkus dalam Promise agar Serverless Function tidak berhenti secara prematur
+  return new Promise((resolve) => {
+    try {
+      const busboy = Busboy({ headers: req.headers });
+      let fileBuffer = [];
+      let fileName = '';
+      let mimeType = '';
 
-    busboy.on('file', (fieldname, file, info) => {
-      fileName = info.filename;
-      mimeType = info.mimeType;
+      busboy.on('file', (fieldname, file, info) => {
+        fileName = info.filename;
+        mimeType = info.mimeType;
 
-      file.on('data', (data) => {
-        fileBuffer.push(data);
-      });
-    });
-
-    busboy.on('finish', async () => {
-      if (fileBuffer.length === 0) {
-        return res.status(400).json({ status: false, message: 'File tidak ditemukan! Gunakan key "file".' });
-      }
-
-      const buffer = Buffer.concat(fileBuffer);
-      const cleanName = fileName.replace(/[^a-zA-Z0-9.]/g, '_');
-      const storageFileName = `${Date.now()}_${cleanName}`;
-
-      // Upload ke Supabase
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(storageFileName, buffer, {
-          contentType: mimeType,
-          upsert: true
+        file.on('data', (data) => {
+          fileBuffer.push(data);
         });
+      });
 
-      if (uploadError) throw uploadError;
+      busboy.on('finish', async () => {
+        try {
+          if (fileBuffer.length === 0) {
+            res.status(400).json({ status: false, message: 'File tidak ditemukan! Gunakan key "file".' });
+            return resolve();
+          }
 
-      const publicUrl = `${CUSTOM_DOMAIN}/file/${storageFileName}`;
+          const buffer = Buffer.concat(fileBuffer);
+          const cleanName = fileName.replace(/[^a-zA-Z0-9.]/g, '_');
+          const storageFileName = `${Date.now()}_${cleanName}`;
 
-      // Simpan ke database uploads
-      await supabase.from('uploads').insert([
-        {
-          file_name: fileName,
-          file_path: storageFileName,
-          file_size: buffer.length,
-          mime_type: mimeType,
-          public_url: publicUrl
-        }
-      ]);
+          // Upload ke Supabase Storage
+          const { error: uploadError } = await supabase.storage
+            .from(BUCKET_NAME)
+            .upload(storageFileName, buffer, {
+              contentType: mimeType,
+              upsert: true
+            });
 
-      return res.status(200).json({
-        status: true,
-        message: 'Upload berhasil',
-        result: {
-          file_name: fileName,
-          file_size: buffer.length,
-          mime_type: mimeType,
-          url: publicUrl
+          if (uploadError) throw uploadError;
+
+          const publicUrl = `${CUSTOM_DOMAIN}/file/${storageFileName}`;
+
+          // Simpan record ke Database Supabase
+          await supabase.from('uploads').insert([
+            {
+              file_name: fileName,
+              file_path: storageFileName,
+              file_size: buffer.length,
+              mime_type: mimeType,
+              public_url: publicUrl
+            }
+          ]);
+
+          res.status(200).json({
+            status: true,
+            message: 'Upload berhasil',
+            result: {
+              file_name: fileName,
+              file_size: buffer.length,
+              mime_type: mimeType,
+              url: publicUrl
+            }
+          });
+          return resolve();
+        } catch (err) {
+          res.status(500).json({ status: false, message: err.message });
+          return resolve();
         }
       });
-    });
 
-    req.pipe(busboy);
+      busboy.on('error', (err) => {
+        res.status(500).json({ status: false, message: err.message });
+        return resolve();
+      });
 
-  } catch (err) {
-    return res.status(500).json({ status: false, message: err.message });
-  }
+      req.pipe(busboy);
+
+    } catch (err) {
+      res.status(500).json({ status: false, message: err.message });
+      return resolve();
+    }
+  });
 }
