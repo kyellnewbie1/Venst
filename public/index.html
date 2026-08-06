@@ -740,58 +740,72 @@
         resultBox.classList.remove('hidden');
       };
 
-      // LIVE API TESTER FUNCTION
-      window.runApiTest = async function() {
-        const fileInput = document.getElementById('api-test-file');
-        const responseViewer = document.getElementById('api-response-viewer');
-        const statusCodeEl = document.getElementById('api-status-code');
-        const testBtn = document.getElementById('api-test-btn');
+// LIVE API TESTER FUNCTION (FIXED)
+window.runApiTest = async function() {
+  const fileInput = document.getElementById('api-test-file');
+  const responseViewer = document.getElementById('api-response-viewer');
+  const statusCodeEl = document.getElementById('api-status-code');
+  const testBtn = document.getElementById('api-test-btn');
 
-        if (!fileInput.files || fileInput.files.length === 0) {
-          alert('Pilih file terlebih dahulu sebelum menguji API!');
-          return;
-        }
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert('Pilih file terlebih dahulu sebelum menguji API!');
+    return;
+  }
 
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append('file', file);
 
-        testBtn.disabled = true;
-        testBtn.classList.add('opacity-50', 'cursor-not-allowed');
-        responseViewer.innerText = '// Mengirim HTTP POST request ke /api/tourl...';
-        responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-amber-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
-        statusCodeEl.innerText = 'Status: Sending...';
+  testBtn.disabled = true;
+  testBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  responseViewer.innerText = '// Mengirim HTTP POST request ke https://venst.zone.id/api/tourl...';
+  responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-amber-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
+  statusCodeEl.innerText = 'Status: Sending...';
 
-        try {
-          const response = await fetch('/api/tourl', {
-            method: 'POST',
-            body: formData
-          });
+  try {
+    // Gunakan URL absolute agar tidak mengarah ke localhost / origin lokal
+    const response = await fetch('https://venst.zone.id/api/tourl', {
+      method: 'POST',
+      body: formData
+    });
 
-          const data = await response.json();
+    statusCodeEl.innerText = `Status: ${response.status} ${response.statusText}`;
 
-          statusCodeEl.innerText = `Status: ${response.status} ${response.statusText}`;
+    // Cek apakah respon yang diterima berupa JSON atau HTML/Text biasa
+    const contentType = response.headers.get('content-type') || '';
+    let data;
 
-          if (response.ok) {
-            responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-emerald-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
-          } else {
-            responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-red-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
-          }
-
-          responseViewer.innerText = JSON.stringify(data, null, 2);
-
-        } catch (err) {
-          statusCodeEl.innerText = 'Status: Fetch Error';
-          responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-red-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
-          responseViewer.innerText = JSON.stringify({
-            status: false,
-            error: err.message || 'Gagal terhubung ke endpoint API.'
-          }, null, 2);
-        } finally {
-          testBtn.disabled = false;
-          testBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        }
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const rawText = await response.text();
+      data = {
+        status: false,
+        message: 'Server mengembalikan respon Non-JSON (kemungkinan HTML/Error Server)',
+        raw_response: rawText.substring(0, 300) // Ambil 300 karakter pertama
       };
+    }
+
+    if (response.ok) {
+      responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-emerald-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
+    } else {
+      responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-red-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
+    }
+
+    responseViewer.innerText = JSON.stringify(data, null, 2);
+
+  } catch (err) {
+    statusCodeEl.innerText = 'Status: Fetch Error';
+    responseViewer.className = 'bg-slate-950 p-4 rounded-xl text-xs font-mono text-red-400 border border-slate-800/80 min-h-[160px] max-h-[260px] overflow-auto';
+    responseViewer.innerText = JSON.stringify({
+      status: false,
+      error: err.message || 'Gagal terhubung ke endpoint API (Masalah CORS/Koneksi/SSL).'
+    }, null, 2);
+  } finally {
+    testBtn.disabled = false;
+    testBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+  }
+};
     });
   </script>
 </body>
